@@ -7,7 +7,7 @@ class TicketSummaryScreen extends StatefulWidget {
   final String to;
   final String date;
   final String departureTime;
-  final String price;
+  final double price;
   final List<int> selectedSeats;
   final String company;
 
@@ -56,7 +56,7 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double basePrice = widget.selectedSeats.length * 500.0;
+    final double basePrice = widget.price; // ✅ Corrected line
     final double discountAmount = basePrice * _discount;
     final double finalPrice = basePrice - discountAmount;
 
@@ -83,7 +83,6 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Existing UI (trip info)...
             Container(
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.all(16),
@@ -101,7 +100,6 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // same trip details...
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -164,7 +162,7 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
               ),
             ),
 
-            // Price summary section
+            // Price summary
             Container(
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.all(16),
@@ -220,7 +218,7 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
               ),
             ),
 
-            // ✅ PAY NOW button
+            // Pay now
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
               child: SizedBox(
@@ -250,8 +248,7 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
                     ),
                   ),
                   child: const Text('Pay Now',
-                      style:
-                      TextStyle(color: Colors.white, fontSize: 16)),
+                      style: TextStyle(color: Colors.white, fontSize: 16)),
                 ),
               ),
             ),

@@ -234,7 +234,6 @@ class PaymentMethodsScreen extends StatelessWidget {
   }
 
   void _processPayment(BuildContext context, String method) {
-    // TODO: Implement actual payment processing
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Processing payment via $method...'),
@@ -242,4 +241,4 @@ class PaymentMethodsScreen extends StatelessWidget {
       ),
     );
   }
-} 
+}

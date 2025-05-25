@@ -11,7 +11,12 @@ class SearchResultsScreen extends StatefulWidget {
   final String to;
   final String date;
 
-  const SearchResultsScreen({required this.from, required this.to, required this.date, Key? key}) : super(key: key);
+  const SearchResultsScreen({
+    required this.from,
+    required this.to,
+    required this.date,
+    Key? key,
+  }) : super(key: key);
 
   @override
   _SearchResultsScreenState createState() => _SearchResultsScreenState();
@@ -26,8 +31,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   void initState() {
     super.initState();
     _tripSubscription = TripService.streamAllTrips().listen((allTrips) {
-      final results = allTrips.where((trip) =>
-      trip.from == widget.from && trip.to == widget.to).toList();
+      final results = allTrips
+          .where((trip) =>
+      trip.from == widget.from && trip.to == widget.to)
+          .toList();
       setState(() {
         _trips = results;
         _loading = false;
@@ -67,16 +74,19 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           ),
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 28),
+                    icon: const Icon(Icons.arrow_back_ios,
+                        color: Colors.white, size: 28),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const SizedBox(width: 10),
-                  const Icon(Icons.directions_bus, color: Colors.white, size: 32),
+                  const Icon(Icons.directions_bus,
+                      color: Colors.white, size: 32),
                   const SizedBox(width: 16),
                   const Text(
                     'Available Trips',
@@ -122,7 +132,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.location_on_outlined, size: 16, color: Color(0xFF1E3A8A)),
+                          const Icon(Icons.location_on_outlined,
+                              size: 16, color: Color(0xFF1E3A8A)),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -140,7 +151,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Icon(Icons.location_on, size: 16, color: Color(0xFF1E3A8A)),
+                          const Icon(Icons.location_on,
+                              size: 16, color: Color(0xFF1E3A8A)),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -159,7 +171,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E3A8A).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -202,11 +215,15 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('${trip.departureTime} · EGP ${trip.price}'),
-                        Text('Company: ${trip.company}', style: TextStyle(color: Colors.grey[600])),
+                        Text(
+                            '${trip.departureTime} · EGP ${trip.price}'),
+                        Text('Company: ${trip.company}',
+                            style: TextStyle(
+                                color: Colors.grey[600])),
                       ],
                     ),
-                    trailing: Text('Seats: ${trip.seatsAvailable}'),
+                    trailing:
+                    Text('Seats: ${trip.seatsAvailable}'),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -217,7 +234,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                             to: trip.to,
                             date: widget.date,
                             departureTime: trip.departureTime,
-                            price: '${trip.price}',
+                            price: trip.price.toDouble(),
                             company: trip.company,
                           ),
                         ),
