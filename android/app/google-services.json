@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "87797264263",
+    "firebase_url": "https://busbooking-efcaa-default-rtdb.firebaseio.com",
+    "project_id": "busbooking-efcaa",
+    "storage_bucket": "busbooking-efcaa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:87797264263:android:741012bdfea67305c6ad22",
+        "android_client_info": {
+          "package_name": "com.example.bus_booking"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVeRHfPWg7p_p6eMvMIhFLr2f0HdqP9Qg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:87797264263:android:13a688b529d8d2c9c6ad22",
+        "android_client_info": {
+          "package_name": "com.example.demoo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVeRHfPWg7p_p6eMvMIhFLr2f0HdqP9Qg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
