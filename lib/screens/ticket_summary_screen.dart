@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:bus_booking/screens/payment_methods_screen.dart';
-
 class TicketSummaryScreen extends StatefulWidget {
   final String busNumber;
   final String from;
@@ -241,17 +240,11 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
                       ),
                     );
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2E8B57),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text('Pay Now',
-                      style: TextStyle(color: Colors.white, fontSize: 16)),
+                  child: const Text("Pay Now"),
                 ),
               ),
             ),
+
           ],
         ),
       ),
@@ -271,3 +264,4 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
     }
   }
 }
+

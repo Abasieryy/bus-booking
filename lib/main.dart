@@ -3,11 +3,20 @@ import 'package:bus_booking/screens/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:bus_booking/screens/signup_screen.dart';
 import 'package:bus_booking/screens/main_page.dart';
+import 'package:flutter_paymob/flutter_paymob.dart';
 
-
-Future<void> main() async{
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  // Initialize FlutterPaymob instance
+  FlutterPaymob.instance.initialize(
+    apiKey: "ZXlKaGJHY2lPaUpJVXpVeE1pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmpiR0Z6Y3lJNklrMWxjbU5vWVc1MElpd2ljSEp2Wm1sc1pWOXdheUk2T1RVd016YzVMQ0p1WVcxbElqb2lhVzVwZEdsaGJDSjkuYm1JZlJEazc0NWVYaGtpdlZVMlZhVk5xcXFrWExMY05jQll4ZEgxVHNiNnhEeU90czdCUGw2Yjd4RTVISnRNNVp3bFBpNzRpODdtblQ3Y0dTblJoRGc=",         // REQUIRED
+    integrationID: 4430089,         // CARD integration id
+    walletIntegrationId: 5135051,    // WALLET integration id
+    iFrameID: 812927,               // iFrame ID for card payments
+  );
+
   runApp(const MyApp());
 }
 
@@ -59,8 +68,7 @@ class MyApp extends StatelessWidget {
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           hintStyle: TextStyle(color: Colors.grey[400]),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
@@ -93,13 +101,10 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/':       (_) => const LoginScreen(),     // login
-        '/signup': (_) => const SignupScreen(),    // sign-up
-        '/home':   (_) => const MainPage(),  // normal user home
-        // we won't put admin here because you always navigate to admin via MaterialPageRoute
+        '/': (_) => const LoginScreen(),
+        '/signup': (_) => const SignupScreen(),
+        '/home': (_) => const MainPage(),
       },
     );
   }
 }
-
-

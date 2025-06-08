@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_paymob/flutter_paymob.dart';
 
 class PaymentMethodsScreen extends StatelessWidget {
   final String busNumber;
@@ -44,7 +45,6 @@ class PaymentMethodsScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Trip Summary Card
           Container(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(16),
@@ -104,24 +104,40 @@ class PaymentMethodsScreen extends StatelessWidget {
               ],
             ),
           ),
-          // Payment Methods List
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
                 _buildPaymentMethod(
                   context,
+                  'Credit / Debit Card',
+                  'Pay using Visa / MasterCard / Meeza',
+                  Icons.credit_card,
+                      () {
+                    FlutterPaymob.instance.payWithCard(
+                      context: context,
+                      currency: 'EGP',
+                      amount: totalAmount,
+                      onPayment: (response) {
+                        if (response.success == true) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(response.message ?? "Payment Success ✅")),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(response.message ?? "Payment Failed ❌")),
+                          );
+                        }
+                      },
+                    );
+                  },
+                ),
+                _buildPaymentMethod(
+                  context,
                   'Vodafone Cash',
                   'Pay using your Vodafone Cash wallet',
                   Icons.phone_android,
                       () => _processPayment(context, 'Vodafone Cash'),
-                ),
-                _buildPaymentMethod(
-                  context,
-                  'Credit/Debit Card',
-                  'Pay using Visa, Mastercard, or other cards',
-                  Icons.credit_card,
-                      () => _processPayment(context, 'Credit/Debit Card'),
                 ),
                 _buildPaymentMethod(
                   context,

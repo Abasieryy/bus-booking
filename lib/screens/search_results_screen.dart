@@ -1,5 +1,3 @@
-// search_results_screen.dart
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:bus_booking/screens/seat_selection_screen.dart';
@@ -30,15 +28,22 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   @override
   void initState() {
     super.initState();
+
+    final formattedDate = _formatDate(widget.date); // convert widget.date
+
     _tripSubscription = TripService.streamAllTrips().listen((allTrips) {
       final results = allTrips
           .where((trip) =>
-      trip.from == widget.from && trip.to == widget.to)
+      trip.from == widget.from &&
+          trip.to == widget.to &&
+          trip.dateOnly == formattedDate) // now both dates match
           .toList();
+
       setState(() {
         _trips = results;
         _loading = false;
       });
+      _trips.sort((a, b) => a.departureTime.compareTo(b.departureTime));
     });
   }
 
@@ -46,6 +51,36 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   void dispose() {
     _tripSubscription.cancel();
     super.dispose();
+  }
+
+  // ✅ Helper function to format widget.date → yyyy-MM-dd
+  String _formatDate(String inputDate) {
+    List<String> parts = inputDate.split(', ');
+    String monthDay = parts[0]; // "Jul 03"
+    String year = parts[1]; // "2025"
+
+    List<String> monthDayParts = monthDay.split(' ');
+    String monthName = monthDayParts[0]; // "Jul"
+    String day = monthDayParts[1]; // "03"
+
+    Map<String, String> monthMap = {
+      'Jan': '01',
+      'Feb': '02',
+      'Mar': '03',
+      'Apr': '04',
+      'May': '05',
+      'Jun': '06',
+      'Jul': '07',
+      'Aug': '08',
+      'Sep': '09',
+      'Oct': '10',
+      'Nov': '11',
+      'Dec': '12',
+    };
+
+    String month = monthMap[monthName] ?? '01';
+
+    return '$year-$month-$day'; // "YYYY-MM-DD"
   }
 
   @override
@@ -74,8 +109,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           ),
           child: SafeArea(
             child: Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -215,15 +249,13 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                            '${trip.departureTime} · EGP ${trip.price}'),
+                        Text('${trip.departureTime} · EGP ${trip.price}'),
                         Text('Company: ${trip.company}',
                             style: TextStyle(
                                 color: Colors.grey[600])),
                       ],
                     ),
-                    trailing:
-                    Text('Seats: ${trip.seatsAvailable}'),
+                    trailing: Text('Seats: ${trip.seatsAvailable}'),
                     onTap: () {
                       Navigator.push(
                         context,

@@ -8,7 +8,7 @@ class TripService {
   /// Stream real-time updates for all trips
   static Stream<List<BusTrip>> streamAllTrips() {
     final db = FirebaseDatabase.instance.ref().child('busCompanies');
-    final controller = StreamController<List<BusTrip>>();
+    final controller = StreamController<List<BusTrip>>.broadcast();
 
     db.onValue.listen((event) {
       final data = event.snapshot.value;

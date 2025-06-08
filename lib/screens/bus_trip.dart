@@ -17,6 +17,10 @@ class BusTrip {
     required this.company,
   });
 
+  String get dateOnly {
+    return departureTime.split('T')[0];
+  }
+
   factory BusTrip.fromMap(Map<dynamic, dynamic> map, String? id, String company) {
     return BusTrip(
       id: id,
