@@ -4,18 +4,18 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:bus_booking/screens/auth/signup_screen.dart';
 import 'package:bus_booking/main/main_page.dart';
 import 'package:flutter_paymob/flutter_paymob.dart';
-
+import 'package:bus_booking/core/config/paymob_config.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  // Initialize FlutterPaymob instance
   FlutterPaymob.instance.initialize(
-    apiKey: "ZXlKaGJHY2lPaUpJVXpVeE1pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmpiR0Z6Y3lJNklrMWxjbU5vWVc1MElpd2ljSEp2Wm1sc1pWOXdheUk2T1RVd016YzVMQ0p1WVcxbElqb2lhVzVwZEdsaGJDSjkuYm1JZlJEazc0NWVYaGtpdlZVMlZhVk5xcXFrWExMY05jQll4ZEgxVHNiNnhEeU90czdCUGw2Yjd4RTVISnRNNVp3bFBpNzRpODdtblQ3Y0dTblJoRGc=",         // REQUIRED
-    integrationID: 4430089,         // CARD integration id
-    walletIntegrationId: 5135051,    // WALLET integration id
-    iFrameID: 812927,               // iFrame ID for card payments
+    apiKey: PaymobConfig.apiKey,
+    integrationID: PaymobConfig.integrationId,
+    walletIntegrationId: PaymobConfig.walletIntegrationId,
+    iFrameID: PaymobConfig.iframeId,
   );
+
 
   runApp(const MyApp());
 }
