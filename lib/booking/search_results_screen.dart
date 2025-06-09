@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:bus_booking/screens/seat_selection_screen.dart';
-import 'package:bus_booking/screens/bus_trip.dart';
-import 'package:bus_booking/screens/trip_service.dart';
+import 'package:bus_booking/booking/seat_selection_screen.dart';
+import 'package:bus_booking/core/bus_trip.dart';
+import 'package:bus_booking/core/trip_service.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   final String from;

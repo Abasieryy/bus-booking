@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:bus_booking/screens/login_screen.dart';
+import 'package:bus_booking/screens/auth/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:bus_booking/screens/signup_screen.dart';
-import 'package:bus_booking/screens/main_page.dart';
+import 'package:bus_booking/screens/auth/signup_screen.dart';
+import 'package:bus_booking/main/main_page.dart';
 import 'package:flutter_paymob/flutter_paymob.dart';
 
 Future<void> main() async {

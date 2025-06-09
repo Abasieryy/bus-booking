@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:bus_booking/screens/payment_methods_screen.dart';
+import 'package:bus_booking/booking/payment_methods_screen.dart';
 class TicketSummaryScreen extends StatefulWidget {
   final String busNumber;
   final String from;

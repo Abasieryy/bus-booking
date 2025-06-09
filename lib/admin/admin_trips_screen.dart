@@ -1,10 +1,8 @@
 // lib/screens/admin_trips_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:bus_booking/screens/bus_trip.dart';
-import 'package:bus_booking/screens/admin_trip_service.dart';
-import 'package:bus_booking/screens/admin_trips_screen.dart';
-
+import 'package:bus_booking/core/bus_trip.dart';
+import 'package:bus_booking/admin/admin_trip_service.dart';
 class AdminTripsScreen extends StatefulWidget {
   final String company;
   const AdminTripsScreen({Key? key, required this.company}) : super(key: key);

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:bus_booking/screens/admin_trips_screen.dart'; // <-- correct import
-import 'package:bus_booking/screens/signup_screen.dart';       // to push the real SignupScreen
-import 'package:bus_booking/screens/forgot_password_screen.dart';
+import 'package:bus_booking/admin/admin_trips_screen.dart'; // <-- correct import
+import 'package:bus_booking/screens/auth/signup_screen.dart';       // to push the real SignupScreen
+import 'package:bus_booking/screens/auth/forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);

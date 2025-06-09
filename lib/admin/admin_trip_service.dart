@@ -1,5 +1,5 @@
 import 'package:firebase_database/firebase_database.dart';
-import 'package:bus_booking/screens/bus_trip.dart';
+import 'package:bus_booking/core/bus_trip.dart';
 
 class AdminTripService {
   final DatabaseReference _db = FirebaseDatabase.instance.ref();

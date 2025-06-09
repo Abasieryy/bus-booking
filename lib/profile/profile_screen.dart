@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:bus_booking/screens/login_screen.dart';
-import 'package:bus_booking/screens/edit_profile_screen.dart';
-import 'package:bus_booking/screens/booking_history_screen.dart';
-import 'package:bus_booking/screens/notifications_screen.dart';
-import 'package:bus_booking/screens/saved_places_screen.dart';
+import 'package:bus_booking/screens/auth/login_screen.dart';
+import 'package:bus_booking/profile/edit_profile_screen.dart';
+import 'package:bus_booking/booking/booking_history_screen.dart';
+import 'package:bus_booking/profile/notifications_screen.dart';
+import 'package:bus_booking/profile/saved_places_screen.dart';
 import 'package:bus_booking/screens/help_support_screen.dart';
 import 'package:bus_booking/screens/about_screen.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:bus_booking/screens/main_page.dart';
+import 'package:bus_booking/main/main_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 

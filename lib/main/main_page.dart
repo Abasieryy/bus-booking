@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:bus_booking/screens/profile_screen.dart';
-import 'package:bus_booking/screens/search_results_screen.dart';
+import 'package:bus_booking/profile/profile_screen.dart';
+import 'package:bus_booking/booking/search_results_screen.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:bus_booking/screens/destination_details_screen.dart';
 

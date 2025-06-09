@@ -1,4 +1,4 @@
-import 'package:bus_booking/screens/ticket_summary_screen.dart';
+import 'package:bus_booking/booking/ticket_summary_screen.dart';
 import 'package:flutter/material.dart';
 
 class SeatSelectionScreen extends StatefulWidget {
