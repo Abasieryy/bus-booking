@@ -4,6 +4,9 @@ import 'package:bus_booking/profile/profile_screen.dart';
 import 'package:bus_booking/booking/search_results_screen.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:bus_booking/screens/destination_details_screen.dart';
+import 'package:bus_booking/helpers/city_mapper.dart';
+import 'package:bus_booking/core/user_trip_service.dart';
+import 'package:bus_booking/screens/el_tor_services_screen.dart';
 
 class MainPage extends StatefulWidget {
   final int initialIndex;
@@ -18,11 +21,32 @@ class _MainPageState extends State<MainPage> {
   final TextEditingController _toController = TextEditingController();
   DateTime? _selectedDate;
   late int _selectedIndex;
+  String? _selectedFromCity;
+  String? _selectedFromLocation;
+  String? _selectedToCity;
+  String? _selectedToLocation;
 
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex;
+  }
+
+  InputDecoration _dropdownDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: Colors.grey.shade50,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF2E8B57)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF2E8B57), width: 2),
+      ),
+    );
   }
 
   final List<String> _egyptianCities = [
@@ -68,62 +92,69 @@ class _MainPageState extends State<MainPage> {
                 childAspectRatio: 0.8,
                 children: [
                   _buildServiceCard(
-                    imageUrl: 'bus_bookinglast/bus_booking/images/dahab1.jfif',
+                    imageUrl: 'assets/images/dahab1.jfif',
                     title: 'Dahab',
                     onTap: () {},
                   ),
                   _buildServiceCard(
-                    imageUrl: 'images/luxor1.jpg',
+                    imageUrl: 'assets/images/luxor1.jpg',
                     title: 'Luxor',
                     onTap: () {},
                   ),
                   _buildServiceCard(
-                    imageUrl: 'images/sharm1.jpg',
+                    imageUrl: 'assets/images/sharm1.jpg',
                     title: 'Sharm El Sheikh',
                     onTap: () {},
                   ),
                   _buildServiceCard(
-                    imageUrl: 'images/Hurghada1.jpg',
+                    imageUrl: 'assets/images/Hurghada1.jpg',
                     title: 'Hurghada',
                     onTap: () {},
                   ),
                   _buildServiceCard(
-                    imageUrl: 'images/eltor.jpg',
+                    imageUrl: 'assets/images/eltor.jpg',
                     title: 'EL Tor',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ElTorServicesScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _buildServiceCard(
-                    imageUrl: 'images/aswan1.jpg',
+                    imageUrl: 'assets/images/aswan1.jpg',
                     title: 'Aswan',
                     onTap: () {},
                   ),
                   _buildServiceCard(
-                    imageUrl: 'images/alex1.webp',
+                    imageUrl: 'assets/images/alex1.webp',
                     title: 'Alexandria',
                     onTap: () {},
                   ),
                   _buildServiceCard(
-                    imageUrl: 'images/cairo1.jfif',
+                    imageUrl: 'assets/images/cairo1.jfif',
                     title: 'Cairo',
                     onTap: () {},
                   ),
                   _buildServiceCard(
-                    imageUrl: 'images/portsaid1.webp',
+                    imageUrl: 'assets/images/portsaid1.webp',
                     title: 'PortSaid',
                     onTap: () {},
                   ),
                   _buildServiceCard(
-                    imageUrl: 'images/marsa1.webp',
+                    imageUrl: 'assets/images/marsa1.webp',
                     title: 'Marsa Matrouh',
                     onTap: () {},
                   ),
                   _buildServiceCard(
-                    imageUrl: 'images/sudr1.jpg',
+                    imageUrl: 'assets/images/sudr1.jpg',
                     title: 'Ras Sudr',
                     onTap: () {},
                   ),
                   _buildServiceCard(
-                    imageUrl: 'images/qena1.jpg',
+                    imageUrl: 'assets/images/qena1.jpg',
                     title: 'Qena',
                     onTap: () {},
                   ),
@@ -187,29 +218,28 @@ class _MainPageState extends State<MainPage> {
                         ),
                       ],
                     ),
-                    _buildTicketList(
-                      tickets: [
-                        TicketData(
-                          from: 'Giza',
-                          to: 'Luxor',
-                          date: 'Tomorrow, 9:00 AM',
+                    StreamBuilder<List<Map<String, dynamic>>>(
+                      stream: UserTripService.upcomingTrips(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+                        final trips = snapshot.data!;
+                        if (trips.isEmpty) {
+                          return const Center(child: Text('No upcoming trips'));
+                        }
+                        final tickets = trips.map((t) => TicketData(
+                          from: t['from'] ?? '-',
+                          to: t['to'] ?? '-',
+                          date: '${t['date'] ?? '-'} , ${t['departureTime'] ?? ''}',
                           status: 'Confirmed',
                           statusColor: Colors.blue,
-                          ticketNumber: 'TKT-2024-002',
-                          busNumber: 'BUS-456',
-                          price: 'EGP 1,100',
-                        ),
-                        TicketData(
-                          from: 'Aswan',
-                          to: 'Hurghada',
-                          date: 'Dec 25, 2024',
-                          status: 'Confirmed',
-                          statusColor: Colors.blue,
-                          ticketNumber: 'TKT-2024-003',
-                          busNumber: 'BUS-789',
-                          price: 'EGP 1,700',
-                        ),
-                      ],
+                          ticketNumber: t['busNumber'] ?? '-',
+                          busNumber: t['busNumber']?.toString() ?? '-',
+                          price: 'EGP ${t['total'] ?? ''}',
+                        )).toList();
+                        return _buildTicketList(tickets: tickets);
+                      },
                     ),
                     _buildTicketList(
                       tickets: [
@@ -250,63 +280,16 @@ class _MainPageState extends State<MainPage> {
 
   Widget _buildMainContent() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Popular Destinations Section
-          const Text(
-            'Popular Destinations',
-            style: TextStyle(
-              fontFamily: 'Montserrat',
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF101418),
-            ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Image.asset('assets/images/mainpage.jpg',
+                height: 180, width: double.infinity, fit: BoxFit.cover),
           ),
           const SizedBox(height: 12),
-          SizedBox(
-            height: 180, // Adjust height as needed
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                _buildServiceCard(
-                  imageUrl:
-                  'assets/images/alexandria.jpg', // Use your Alexandria image asset
-                  title: 'Alexandria',
-                  onTap: () {
-                    setState(() {
-                      _toController.text = 'Alexandria';
-                    });
-                  },
-                ),
-                const SizedBox(width: 16),
-                _buildServiceCard(
-                  imageUrl:
-                  'https://images.unsplash.com/photo-1572252009286-268acec5ca0a', // Example Cairo image
-                  title: 'Cairo',
-                  onTap: () {
-                    setState(() {
-                      _toController.text = 'Cairo';
-                    });
-                  },
-                ),
-                const SizedBox(width: 16),
-                _buildServiceCard(
-                  imageUrl:
-                  'https://images.unsplash.com/photo-1506744038136-46273834b3fb', // Example Luxor image
-                  title: 'Luxor',
-                  onTap: () {
-                    setState(() {
-                      _toController.text = 'Luxor';
-                    });
-                  },
-                ),
-                // Add more destinations as needed
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -323,139 +306,30 @@ class _MainPageState extends State<MainPage> {
             ),
             child: Column(
               children: [
-                // From Field
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 1,
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: DropdownButtonFormField<String>(
-                    value: _fromController.text.isEmpty
-                        ? null
-                        : _fromController.text,
-                    decoration: InputDecoration(
-                      labelText: 'FROM',
-                      labelStyle: const TextStyle(
-                        color: Color(0xFF2E8B57),
-                        fontWeight: FontWeight.bold,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF2E8B57),
-                          width: 2,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF2E8B57),
-                          width: 2,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF2E8B57),
-                          width: 2,
-                        ),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: const Icon(
-                        Icons.location_on_outlined,
-                        color: Color(0xFF2E8B57),
-                      ),
-                    ),
-                    items: _egyptianCities.map((String city) {
-                      return DropdownMenuItem<String>(
-                        value: city,
-                        child: Text(city),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        setState(() {
-                          _fromController.text = newValue;
-                        });
-                      }
-                    },
-                  ),
+                // FROM
+                _dropdownBlock(
+                  label: 'From',
+                  selectedCity: _selectedFromCity,
+                  selectedLocation: _selectedFromLocation,
+                  onCityChanged: (city) => setState(() {
+                    _selectedFromCity = city;
+                    _selectedFromLocation = null;
+                  }),
+                  onLocationChanged: (loc) => setState(() => _selectedFromLocation = loc),
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 1,
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: DropdownButtonFormField<String>(
-                    value:
-                    _toController.text.isEmpty ? null : _toController.text,
-                    decoration: InputDecoration(
-                      labelText: 'TO',
-                      labelStyle: const TextStyle(
-                        color: Color(0xFF2E8B57),
-                        fontWeight: FontWeight.bold,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF2E8B57),
-                          width: 2,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF2E8B57),
-                          width: 2,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF2E8B57),
-                          width: 2,
-                        ),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: const Icon(
-                        Icons.location_on,
-                        color: Color(0xFF2E8B57),
-                      ),
-                    ),
-                    items: _egyptianCities.map((String city) {
-                      return DropdownMenuItem<String>(
-                        value: city,
-                        child: Text(city),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        setState(() {
-                          _toController.text = newValue;
-                        });
-                      }
-                    },
-                  ),
+
+                // TO
+                _dropdownBlock(
+                  label: 'To',
+                  selectedCity: _selectedToCity,
+                  selectedLocation: _selectedToLocation,
+                  onCityChanged: (city) => setState(() {
+                    _selectedToCity = city;
+                    _selectedToLocation = null;
+                  }),
+                  onLocationChanged: (loc) => setState(() => _selectedToLocation = loc),
                 ),
+
                 const SizedBox(height: 20),
                 // Date Selection
                 InkWell(
@@ -489,26 +363,36 @@ class _MainPageState extends State<MainPage> {
               ],
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                if (_fromController.text.isNotEmpty &&
-                    _toController.text.isNotEmpty &&
+                if (_selectedFromCity != null &&
+                    _selectedFromLocation != null &&
+                    _selectedToCity != null &&
+                    _selectedToLocation != null &&
                     _selectedDate != null) {
+
+                  final fromLocationId = cityLocationIdMap[_selectedFromCity!]![_selectedFromLocation!].toString();
+                  final toLocationId = cityLocationIdMap[_selectedToCity!]![_selectedToLocation!].toString();
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => SearchResultsScreen(
-                        from: _fromController.text,
-                        to: _toController.text,
+                        from: _selectedFromCity!,
+                        to: _selectedToCity!,
                         date: DateFormat('MMM dd, yyyy').format(_selectedDate!),
+                        fromLocationId: fromLocationId,
+                        toLocationId: toLocationId,
                       ),
                     ),
                   );
                 }
               },
+
+
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -520,6 +404,45 @@ class _MainPageState extends State<MainPage> {
                 'Search Buses',
                 style: TextStyle(fontSize: 16, color: Colors.white),
               ),
+            ),
+          ),
+
+          const SizedBox(height: 6),
+          SizedBox(
+            height: 180,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                _buildServiceCard(
+                  imageUrl: 'assets/images/Alexandria-City-Egypt-Egypt-Tours-Portal.jpg',
+                  title: 'Alexandria',
+                  onTap: () {
+                    setState(() {
+                      _toController.text = 'Alexandria';
+                    });
+                  },
+                ),
+                const SizedBox(width: 16),
+                _buildServiceCard(
+                  imageUrl: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a',
+                  title: 'Cairo',
+                  onTap: () {
+                    setState(() {
+                      _toController.text = 'Cairo';
+                    });
+                  },
+                ),
+                const SizedBox(width: 16),
+                _buildServiceCard(
+                  imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
+                  title: 'Luxor',
+                  onTap: () {
+                    setState(() {
+                      _toController.text = 'Luxor';
+                    });
+                  },
+                ),
+              ],
             ),
           ),
         ],
@@ -806,10 +729,15 @@ class _MainPageState extends State<MainPage> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-              ),
+              imageUrl.startsWith('http')
+                  ? Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                    )
+                  : Image.asset(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                    ),
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -838,6 +766,57 @@ class _MainPageState extends State<MainPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _dropdownBlock({
+    required String label,
+    required String? selectedCity,
+    required String? selectedLocation,
+    required ValueChanged<String?> onCityChanged,
+    required ValueChanged<String?> onLocationChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DropdownButtonFormField<String>(
+            decoration: _dropdownDecoration('Choose $label city'),
+            value: selectedCity,
+            isExpanded: true,
+            icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                color: Color(0xFF2E8B57)),
+            items: cityLocationIdMap.keys
+                .map((city) => DropdownMenuItem(value: city, child: Text(city)))
+                .toList(),
+            onChanged: onCityChanged,
+          ),
+
+          if (selectedCity != null) ...[
+            const SizedBox(height: 14),
+            DropdownButtonFormField<String>(
+              decoration: _dropdownDecoration('Choose $label location'),
+              value: selectedLocation,
+              isExpanded: true,
+              icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                  color: Color(0xFF2E8B57)),
+              items: cityLocationIdMap[selectedCity]!.keys
+                  .map((loc) => DropdownMenuItem(value: loc, child: Text(loc)))
+                  .toList(),
+              onChanged: onLocationChanged,
+            ),
+          ],
+        ],
       ),
     );
   }

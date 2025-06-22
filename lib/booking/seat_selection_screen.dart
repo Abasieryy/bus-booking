@@ -1,5 +1,8 @@
-import 'package:bus_booking/booking/ticket_summary_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:bus_booking/services/bluebus_service.dart';
+import 'package:bus_booking/booking/ticket_summary_screen.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'dart:math';
 
 class SeatSelectionScreen extends StatefulWidget {
   final String busNumber;
@@ -9,9 +12,14 @@ class SeatSelectionScreen extends StatefulWidget {
   final String departureTime;
   final double price;
   final String company;
+  final String? locationId;
+  final String? toLocationId;
+  final String? tripId;
+  final String? tripRouteLineId;
+  final int? totalSeats;
 
   const SeatSelectionScreen({
-    super.key,
+    Key? key,
     required this.busNumber,
     required this.from,
     required this.to,
@@ -19,29 +27,124 @@ class SeatSelectionScreen extends StatefulWidget {
     required this.departureTime,
     required this.price,
     required this.company,
-  });
+    this.locationId,
+    this.toLocationId,
+    this.tripId,
+    this.tripRouteLineId,
+    this.totalSeats,
+  }) : super(key: key);
 
   @override
-  State<SeatSelectionScreen> createState() => _SeatSelectionScreenState();
+  _SeatSelectionScreenState createState() => _SeatSelectionScreenState();
 }
 
 class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
-  final List<int> _bookedSeats = [];
-  final int _rows = 11;
-  final int _cols = 4;
-  final Set<int> _selectedSeats = {};
+  final Set<int> _selectedSeatNumbers = {};
+  int _totalSeats = 28;
+  bool _loadingSeats = false;
+  Set<int> _bookedSeats = {};
+  Set<int> _blueBusAvailable = {}; // for reference
 
-  String getRowLabel(int row) => String.fromCharCode('A'.codeUnitAt(0) + row);
-  String getSeatLabel(int index) {
-    int row = index ~/ _cols;
-    int col = index % _cols;
-    return '${String.fromCharCode(65 + col)}${row + 1}';
+  @override
+  void initState() {
+    super.initState();
+    _totalSeats = widget.totalSeats ?? _totalSeats;
+    _fetchBookedSeatsAndCount();
+  }
+
+  Future<void> _fetchBookedSeatsAndCount() async {
+    setState(() => _loadingSeats = true);
+
+    try {
+      // 🔒 Load booked seat numbers from Firebase
+      final bookedSnapshot = await FirebaseDatabase.instance
+          .ref('bookedSeats/${widget.busNumber}_${widget.date}')
+          .get();
+
+      final firebaseBooked = <int>{};
+      if (bookedSnapshot.exists) {
+        final raw = bookedSnapshot.value;
+        if (raw is Map) {
+          raw.forEach((key, value) {
+            final seat = int.tryParse(key.toString());
+            if (seat != null) firebaseBooked.add(seat);
+          });
+        } else if (raw is List) {
+          for (int i = 0; i < raw.length; i++) {
+            if (raw[i] == true) firebaseBooked.add(i);
+          }
+        }
+      }
+
+      // 🎫 Get detailed seat availability from BlueBus
+      Map<String, dynamic> availabilityJson = {};
+      if (widget.company == 'BlueBus') {
+        try {
+          availabilityJson = await BlueBusService.fetchAvailabilityJson(
+            tripUuid: widget.busNumber,
+            fromLocationId: widget.locationId ?? '',
+            toLocationId: widget.toLocationId ?? '',
+          );
+        } catch (e) {
+          print('⚠️ Failed to fetch BlueBus availability JSON: $e');
+        }
+      }
+
+      Set<int> finalBooked = firebaseBooked;
+      int maxSeatNumber = _totalSeats;
+
+      if (widget.company == 'BlueBus' && availabilityJson.isNotEmpty) {
+        final blueBusAvailable = <int>{};
+        if (availabilityJson['unReservedSeat'] is List) {
+          for (final block in (availabilityJson['unReservedSeat'] as List)) {
+            if (block is Map && block['seats_numbers'] is List) {
+              for (final sn in block['seats_numbers'] as List) {
+                final seat = int.tryParse(sn.toString());
+                if (seat != null) blueBusAvailable.add(seat);
+              }
+            }
+          }
+        }
+
+        // determine total seats
+        if (blueBusAvailable.isNotEmpty) {
+          maxSeatNumber = blueBusAvailable.reduce(max);
+        }
+
+        final computedBooked = <int>{};
+        for (int i = 1; i <= maxSeatNumber; i++) {
+          if (!blueBusAvailable.contains(i)) computedBooked.add(i);
+        }
+        finalBooked = {...firebaseBooked, ...computedBooked};
+
+        setState(() {
+          _blueBusAvailable = blueBusAvailable;
+        });
+      }
+
+      setState(() {
+        _bookedSeats = finalBooked;
+        _totalSeats = max(_totalSeats, maxSeatNumber);
+      });
+    } catch (e) {
+      print('❌ Error loading seats: $e');
+    } finally {
+      setState(() => _loadingSeats = false);
+    }
+  }
+
+  void _onSeatSelected(int seatNumber) {
+    setState(() {
+      if (_selectedSeatNumbers.contains(seatNumber)) {
+        _selectedSeatNumbers.remove(seatNumber);
+      } else {
+        _selectedSeatNumbers.add(seatNumber);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    double totalPrice = _selectedSeats.length * widget.price;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
@@ -62,234 +165,200 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
           ),
         ),
       ),
-      body: Column(
+      body: _loadingSeats
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
         children: [
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Container(
-                  width: 45,
-                  height: 45,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    border: Border.all(color: Colors.grey.shade400, width: 2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.directions_bus,
-                      color: Colors.grey, size: 28),
-                ),
-                const SizedBox(width: 100),
-                Container(
-                  width: 45,
-                  height: 45,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    border: Border.all(color: Colors.grey.shade400, width: 2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.directions_bus,
-                      color: Colors.grey, size: 28),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
           Expanded(
             child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: List.generate(_rows, (row) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: List.generate(2, (col) {
-                              int index = row * _cols + col;
-                              bool isSelected =
-                              _selectedSeats.contains(index + 1);
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: _buildSeat(index, isSelected),
-                              );
-                            }),
-                          ),
-                          Row(
-                            children: List.generate(2, (col) {
-                              int index = row * _cols + col + 2;
-                              bool isSelected =
-                              _selectedSeats.contains(index + 1);
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: _buildSeat(index, isSelected),
-                              );
-                            }),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _buildLegend(),
+                  const SizedBox(height: 16),
+                  _buildSeatLayout(),
+                ],
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 32),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildLegendBox(const Color(0xFF101418)),
-                const SizedBox(width: 4),
-                const Text('Available', style: TextStyle(fontSize: 13, color: Color(0xFF101418))),
-                const SizedBox(width: 16),
-                _buildLegendBox(const Color(0xFF2E8B57)),
-                const SizedBox(width: 4),
-                const Text('Selected', style: TextStyle(fontSize: 13, color: Color(0xFF101418))),
-                const SizedBox(width: 16),
-                _buildLegendBox(const Color(0xFFD1D5DB)),
-                const SizedBox(width: 4),
-                const Text('Booked', style: TextStyle(fontSize: 13, color: Color(0xFF101418))),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _selectedSeats.isEmpty
-                        ? 'Selected Seat: -'
-                        : 'Selected Seat: ${_selectedSeats.map((s) => getSeatLabel(s - 1)).join(",")}',
-                    style: const TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 15,
-                      color: Color(0xFF101418),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  'Total: EGP ${totalPrice.toStringAsFixed(0)}',
-                  style: const TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: Color(0xFF101418),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-            child: SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _selectedSeats.isEmpty
-                    ? null
-                    : () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TicketSummaryScreen(
-                        busNumber: widget.busNumber,
-                        from: widget.from,
-                        to: widget.to,
-                        date: widget.date,
-                        departureTime: widget.departureTime,
-                        price: totalPrice,
-                        selectedSeats: _selectedSeats.toList(),
-                        company: widget.company,
-                      ),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2E8B57),
-                  disabledBackgroundColor: Colors.grey.shade300,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  textStyle: const TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                child: const Text('Book Now', style: TextStyle(color: Colors.white)),
-              ),
-            ),
-          ),
+          _buildBottomBar(),
         ],
       ),
     );
   }
 
-  Widget _buildSeat(int index, bool isSelected) {
-    return Column(
+  Widget _buildLegend() {
+    Widget legendItem(Color color, String label) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _legendBox(color),
+          const SizedBox(width: 6),
+          Text(label),
+        ],
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              if (isSelected) {
-                _selectedSeats.remove(index + 1);
-              } else {
-                _selectedSeats.add(index + 1);
-              }
-            });
-          },
-          child: Container(
-            width: 45,
-            height: 45,
-            decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF2E8B57) : Colors.white,
-              border: Border.all(
-                color: isSelected ? const Color(0xFF2E8B57) : const Color(0xFF101418),
-                width: 2,
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '${index + 1}',
-          style: const TextStyle(
-            fontFamily: 'Montserrat',
-            fontSize: 12,
-            color: Color(0xFF101418),
-          ),
-        ),
+        legendItem(const Color(0xFF101418), 'Available'),
+        legendItem(const Color(0xFF2E8B57), 'Selected'),
+        legendItem(const Color(0xFFD1D5DB), 'Booked'),
       ],
     );
   }
 
-  Widget _buildLegendBox(Color color) {
+  Widget _legendBox(Color borderColor) {
     return Container(
       width: 18,
       height: 18,
       decoration: BoxDecoration(
-        color: color == const Color(0xFFD1D5DB) ? Colors.grey.shade200 : Colors.white,
-        border: Border.all(color: color, width: 2),
+        color: borderColor == const Color(0xFFD1D5DB)
+            ? Colors.grey.shade200
+            : Colors.white,
+        border: Border.all(color: borderColor, width: 2),
         borderRadius: BorderRadius.circular(6),
+      ),
+    );
+  }
+
+  Widget _buildSeatLayout() {
+    List<Widget> rows = [];
+    final seats = List<int>.generate(_totalSeats, (i) => i + 1);
+    const seatSize = 45.0;
+    const aisleWidth = 32.0;
+
+    rows.add(Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: const [
+        SizedBox(width: 40),
+        Icon(Icons.directions_bus, color: Colors.grey, size: 40),
+        Spacer(),
+        Icon(Icons.directions_bus, color: Colors.grey, size: 40),
+        SizedBox(width: 40),
+      ],
+    ));
+    rows.add(const SizedBox(height: 12));
+
+    for (int i = 0; i < seats.length; i += 4) {
+      final leftSeats = seats.sublist(i, min(i + 2, seats.length));
+      final rightSeats = (i + 2 < seats.length)
+          ? seats.sublist(i + 2, min(i + 4, seats.length))
+          : [];
+
+      rows.add(Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ...leftSeats.map((sn) => _seatWidget(sn, seatSize)).toList(),
+          const SizedBox(width: aisleWidth),
+          ...rightSeats.map((sn) => _seatWidget(sn, seatSize)).toList(),
+        ],
+      ));
+
+      rows.add(const SizedBox(height: 22));
+    }
+
+    return Column(children: rows);
+  }
+
+  Widget _seatWidget(int seatNumber, double size) {
+    final isSelected = _selectedSeatNumbers.contains(seatNumber);
+    final isBooked = _bookedSeats.contains(seatNumber);
+
+    Color borderColor = isSelected
+        ? const Color(0xFF2E8B57)
+        : const Color(0xFF101418);
+    Color fillColor;
+    if (isBooked) {
+      fillColor = Colors.grey.shade200;
+      borderColor = const Color(0xFFD1D5DB);
+    } else if (isSelected) {
+      fillColor = const Color(0xFF2E8B57);
+    } else {
+      fillColor = Colors.white;
+    }
+
+    return GestureDetector(
+      onTap: isBooked ? null : () => _onSeatSelected(seatNumber),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 6),
+        child: Column(
+          children: [
+            Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                color: fillColor,
+                border: Border.all(color: borderColor, width: 2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              alignment: Alignment.center,
+              child: isBooked
+                  ? const Icon(Icons.event_seat, color: Colors.white, size: 18)
+                  : null,
+            ),
+            const SizedBox(height: 4),
+            Text(seatNumber.toString()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    final seatText = _selectedSeatNumbers.isEmpty
+        ? '-'
+        : _selectedSeatNumbers.join(', ');
+    final total =
+    (_selectedSeatNumbers.length * widget.price).toStringAsFixed(0);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      color: Colors.grey.shade100,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Selected Seat: $seatText'),
+              Text('Total: EGP $total'),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _selectedSeatNumbers.isEmpty
+                  ? null
+                  : () {
+                final totalPrice =
+                    _selectedSeatNumbers.length * widget.price;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TicketSummaryScreen(
+                      busNumber: widget.busNumber,
+                      from: widget.from,
+                      to: widget.to,
+                      date: widget.date,
+                      departureTime: widget.departureTime,
+                      price: totalPrice,
+                      selectedSeats: _selectedSeatNumbers.toList(),
+                      company: widget.company,
+                      locationId: widget.locationId,
+                      toLocationId: widget.toLocationId,
+                      tripId: widget.tripId,
+                      tripRouteLineId: widget.tripRouteLineId,
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Book Now'),
+            ),
+          ),
+        ],
       ),
     );
   }

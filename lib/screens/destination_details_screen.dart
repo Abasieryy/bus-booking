@@ -68,10 +68,132 @@ The city is home to the Egyptian Museum, which houses the world's largest collec
 
 Modern Cairo is a vibrant metropolis that combines ancient history with contemporary life, featuring world-class restaurants, shopping districts, and cultural institutions.''';
 
+      case 'EL Tor':
+        return '''El Tor (also spelled Al-Tur) is a coastal city in South Sinai, Egypt. Known for its serene Red Sea shoreline and warm hospitality, El Tor is the administrative capital of South Sinai Governorate and a convenient stop-over for travelers heading to Sharm El Sheikh or St Catherine. The city offers fresh seafood restaurants, local cafés, and quiet beaches perfect for relaxation.''';
+
       default:
         return 'No description available for this destination.';
     }
   }
+
+  List<Map<String, String?>> _elTorRestaurants() => [
+        {
+          'name': 'مطعم مندي جبل الطور',
+          'phone': '010 06445905',
+          'image': 'https://i.imgur.com/OQqfV4R.jpg',
+          'address': 'El Tor, South Sinai',
+        },
+        {
+          'name': 'Solo',
+          'phone': null,
+          'image': 'https://i.imgur.com/1D8K8Rm.jpg',
+          'address': 'El Tor, South Sinai',
+        },
+        {
+          'name': 'اسماك مكة',
+          'phone': '010 28041508',
+          'image': 'https://i.imgur.com/NV8uLro.jpg',
+          'address': '7J3P+J6C, El Tor',
+        },
+        {
+          'name': 'حواوشي بلال',
+          'phone': '011 44381650',
+          'image': 'https://i.imgur.com/EDqUqkU.jpg',
+          'address': '6JWF+4WX, El Tor',
+        },
+        {
+          'name': 'Solo cafe',
+          'phone': '015 55035915',
+          'image': 'https://i.imgur.com/6q4rhS8.jpg',
+          'address': 'El Tor, South Sinai',
+        },
+        {
+          'name': 'El Qenawy Restaurant',
+          'phone': '010 27584999',
+          'image': 'https://i.imgur.com/7bLhbrG.jpg',
+          'address': 'El Tor, South Sinai',
+        },
+        {
+          'name': 'تومية',
+          'phone': '010 97200428',
+          'image': 'https://i.imgur.com/DZmB1Zt.jpg',
+          'address': 'El Wadi, El Tor',
+        },
+        {
+          'name': 'Hadramout restaurant',
+          'phone': '010 22409537',
+          'image': 'https://i.imgur.com/CvnvqQ7.jpg',
+          'address': '7J29+Q92, El Tor',
+        },
+        {
+          'name': 'القليوبي',
+          'phone': '010 10214909',
+          'image': 'https://i.imgur.com/qiTEGMI.jpg',
+          'address': 'gamal abdelnaser st., El Tor',
+        },
+        {
+          'name': 'مطعم اسماك البدري',
+          'phone': '010 05438907',
+          'image': 'https://i.imgur.com/3Z6bTbk.jpg',
+          'address': '6JRJ+R6F, El Tor',
+        },
+        {
+          'name': 'Al fanar beach',
+          'phone': null,
+          'image': 'https://i.imgur.com/oxVTm58.jpg',
+          'address': '6JO4+8C, El Tor',
+        },
+        {
+          'name': 'Abu Ali Restaurant',
+          'phone': '010 23030013',
+          'image': 'https://i.imgur.com/zM5XlKi.jpg',
+          'address': 'Main road, El Tor',
+        },
+      ];
+
+  List<Map<String, String?>> _elTorHotels() => [
+        {
+          'name': 'Delmon Hotel',
+          'phone': '069 3771060',
+          'image': 'https://i.imgur.com/Yq4j3fV.jpg',
+          'address': 'El Tor, South Sinai',
+          'price': 'EGP 890',
+        },
+        {
+          'name': 'Moses Bay Resort - Magdolina',
+          'phone': '010 23010348',
+          'image': 'https://i.imgur.com/7Y5DJRg.jpg',
+          'address': '6JM4+FRJ, El Corniche Rd, El Tor',
+          'price': '-',
+        },
+      ];
+
+  List<Map<String, String?>> _elTorHospitals() => [
+        {
+          'name': 'South Sinai Hospital',
+          'phone': '012 20003533',
+          'image': 'https://i.imgur.com/PDk2yxp.jpg',
+          'address': '10 Ras Kennedy El-Salam, El Tor',
+        },
+        {
+          'name': 'El Tor General Hospital (Outpatient Clinic)',
+          'phone': '069 3773235',
+          'image': 'https://i.imgur.com/kLjWNKI.jpg',
+          'address': '6JWC+VQ4, El Tor',
+        },
+        {
+          'name': 'Markaz Sehi Al Zahraa',
+          'phone': null,
+          'image': 'https://i.imgur.com/haurbZH.jpg',
+          'address': '6JWQ+X2X, El Tor',
+        },
+        {
+          'name': 'Fayrouz Medical Complex',
+          'phone': null,
+          'image': 'https://i.imgur.com/j9D4rXY.jpg',
+          'address': 'ElNasr Neighborhood, El Tor',
+        },
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +261,9 @@ Modern Cairo is a vibrant metropolis that combines ancient history with contempo
               width: double.infinity,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: NetworkImage(imageUrl),
+                  image: imageUrl.startsWith('http')
+                      ? NetworkImage(imageUrl)
+                      : AssetImage(imageUrl) as ImageProvider,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -167,6 +291,173 @@ Modern Cairo is a vibrant metropolis that combines ancient history with contempo
                       color: Color(0xFF4B5563),
                     ),
                   ),
+                  if (title == 'EL Tor') ...[
+                    const SizedBox(height: 28),
+                    const Text(
+                      'Popular Restaurants',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF101418),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _elTorRestaurants().length,
+                      itemBuilder: (context, index) {
+                        final r = _elTorRestaurants()[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  'https://source.unsplash.com/seed/restaurant$index/80x80?restaurant,food',
+                                  width: 70,
+                                  height: 70,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    width: 70,
+                                    height: 70,
+                                    color: Colors.grey.shade300,
+                                    child: const Icon(Icons.restaurant, color: Colors.white70),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(r['name']!, style: const TextStyle(fontWeight: FontWeight.w600)),
+                                    Text(r['address']!, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                    if (r['phone'] != null)
+                                      Text(r['phone']!, style: const TextStyle(fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+
+                    // ─────── Hotels ──────────────────────────
+                    const SizedBox(height: 28),
+                    const Text(
+                      'Hotels',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF101418),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _elTorHotels().length,
+                      itemBuilder: (context, index) {
+                        final h = _elTorHotels()[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  'https://source.unsplash.com/seed/hotel$index/80x80?hotel,resort',
+                                  width: 70,
+                                  height: 70,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    width: 70,
+                                    height: 70,
+                                    color: Colors.grey.shade300,
+                                    child: const Icon(Icons.hotel, color: Colors.white70),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(h['name']!, style: const TextStyle(fontWeight: FontWeight.w600)),
+                                    Text(h['address']!, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                    if (h['phone'] != null)
+                                      Text(h['phone']!, style: const TextStyle(fontSize: 12)),
+                                    if (h['price'] != null && h['price']!.isNotEmpty)
+                                      Text(h['price']!, style: const TextStyle(fontSize: 12, color: Color(0xFF2E8B57))),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+
+                    // ─────── Hospitals ───────────────────────
+                    const SizedBox(height: 28),
+                    const Text(
+                      'Hospitals & Clinics',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF101418),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _elTorHospitals().length,
+                      itemBuilder: (context, index) {
+                        final m = _elTorHospitals()[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  'https://source.unsplash.com/seed/hospital$index/80x80?hospital,clinic',
+                                  width: 70,
+                                  height: 70,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    width: 70,
+                                    height: 70,
+                                    color: Colors.grey.shade300,
+                                    child: const Icon(Icons.local_hospital, color: Colors.white70),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(m['name']!, style: const TextStyle(fontWeight: FontWeight.w600)),
+                                    Text(m['address']!, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                    if (m['phone'] != null)
+                                      Text(m['phone']!, style: const TextStyle(fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),

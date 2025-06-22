@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:bus_booking/core/bus_trip.dart';
+import 'package:bus_booking/services/bluebus_service.dart';
+import 'package:bus_booking/helpers/city_mapper.dart';
 
 class TripService {
   static final List<String> companies = ['WeBus', 'FastGo'];
 
-  /// Stream real-time updates for all trips
+  /// ✅ Stream all Firebase trips (live updates)
   static Stream<List<BusTrip>> streamAllTrips() {
     final db = FirebaseDatabase.instance.ref().child('busCompanies');
     final controller = StreamController<List<BusTrip>>.broadcast();
@@ -33,8 +35,7 @@ class TripService {
     return controller.stream;
   }
 
-
-  /// Fetch all trips once
+  /// ✅ Fetch all Firebase trips once
   static Future<List<BusTrip>> fetchAllTrips() async {
     List<BusTrip> allTrips = [];
 
@@ -45,8 +46,10 @@ class TripService {
       if (snapshot.exists) {
         final data = snapshot.value as Map<dynamic, dynamic>;
         data.forEach((key, value) {
-          final trip = BusTrip.fromMap(value, key, company);
-          allTrips.add(trip);
+          if (value is Map) {
+            final trip = BusTrip.fromMap(value, key, company);
+            allTrips.add(trip);
+          }
         });
       }
     }
@@ -54,29 +57,76 @@ class TripService {
     return allTrips;
   }
 
-  /// Search for trips by from/to
-  static Future<List<BusTrip>> searchTrips(String from, String to) async {
-    final trips = await fetchAllTrips();
-    return trips.where((trip) => trip.from == from && trip.to == to).toList();
+  /// 🔍 Search both Firebase & Blue Bus trips by city and date
+  static Future<List<BusTrip>> searchTrips({
+    required String from,
+    required String to,
+    required String date,
+  }) async {
+    final fromCityId = mapCityToBlueBusId(from);
+    final toCityId = mapCityToBlueBusId(to);
+
+    // 🟡 Filter Firebase trips
+    final firebaseTrips = await fetchAllTrips();
+    final firebaseResults = firebaseTrips.where((trip) =>
+        trip.fromCityId == fromCityId &&
+        trip.toCityId == toCityId &&
+        trip.dateOnly == date
+    ).toList();
+
+    // 🔵 Fetch BlueBus trips
+    List<BusTrip> blueBusMappedTrips = [];
+    try {
+      final blueBusTrips = await BlueBusService.searchTripsByCity(
+        fromCityId: fromCityId.toString(),
+        toCityId: toCityId.toString(),
+        travelDate: date,
+      );
+
+      for (final trip in blueBusTrips) {
+        int availableSeats = 40;
+        try {
+          availableSeats = await BlueBusService.fetchAvailableSeats(
+            tripUuid: trip.tripId,
+            fromLocationId: trip.fromLocationId,
+            toLocationId: trip.toLocationId,
+          );
+        } catch (e) {
+          print('⚠️ Failed to fetch seats for ${trip.tripId}: $e');
+        }
+
+        blueBusMappedTrips.add(BusTrip.fromBlueBusModel(trip).copyWith(
+          seatsAvailable: availableSeats,
+        ));
+      }
+    } catch (e) {
+      print("🔴 Error loading Blue Bus trips: $e");
+    }
+
+    // ✅ Remove duplicates (same trip id)
+    final blueIds = blueBusMappedTrips.map((t) => t.id).toSet();
+    final uniqueFirebaseTrips = firebaseResults.where((t) => !blueIds.contains(t.id)).toList();
+
+    return [...uniqueFirebaseTrips, ...blueBusMappedTrips]
+      ..sort((a, b) => a.departureTime.compareTo(b.departureTime));
   }
 
-  /// Get all trips to a specific destination
+  /// 📌 Get all trips going to a specific city
   static Future<List<BusTrip>> tripsTo(String destination) async {
     final trips = await fetchAllTrips();
     return trips.where((trip) => trip.to == destination).toList();
   }
 
-  /// Find a trip by exact info
+  /// 🔎 Find a trip by from, to, and time
   static Future<BusTrip?> findTrip(String from, String to, String departureTime) async {
     final trips = await fetchAllTrips();
     try {
-      return trips.firstWhere(
-            (trip) =>
-        trip.from == from &&
-            trip.to == to &&
-            trip.departureTime == departureTime,
+      return trips.firstWhere((trip) =>
+      trip.from == from &&
+          trip.to == to &&
+          trip.departureTime == departureTime,
       );
-    } catch (e) {
+    } catch (_) {
       return null;
     }
   }

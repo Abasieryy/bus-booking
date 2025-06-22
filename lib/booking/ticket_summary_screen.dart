@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bus_booking/booking/payment_methods_screen.dart';
+
 class TicketSummaryScreen extends StatefulWidget {
   final String busNumber;
   final String from;
@@ -9,6 +10,10 @@ class TicketSummaryScreen extends StatefulWidget {
   final double price;
   final List<int> selectedSeats;
   final String company;
+  final String? locationId;
+  final String? toLocationId;
+  final String? tripId;
+  final String? tripRouteLineId;
 
   const TicketSummaryScreen({
     super.key,
@@ -20,6 +25,10 @@ class TicketSummaryScreen extends StatefulWidget {
     required this.price,
     required this.selectedSeats,
     required this.company,
+    this.locationId,
+    this.toLocationId,
+    this.tripId,              // ✅ Add this
+    this.tripRouteLineId,
   });
 
   @override
@@ -55,7 +64,7 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double basePrice = widget.price; // ✅ Corrected line
+    final double basePrice = widget.price;
     final double discountAmount = basePrice * _discount;
     final double finalPrice = basePrice - discountAmount;
 
@@ -123,8 +132,7 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
                         ],
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: const Color(0xFF2E8B57).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
@@ -143,8 +151,7 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
                   const SizedBox(height: 20),
                   Row(
                     children: [
-                      const Icon(Icons.event_seat,
-                          color: Color(0xFF2E8B57), size: 20),
+                      const Icon(Icons.event_seat, color: Color(0xFF2E8B57), size: 20),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -181,8 +188,7 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Base Price',
-                          style: TextStyle(fontSize: 14)),
+                      const Text('Base Price', style: TextStyle(fontSize: 14)),
                       Text('EGP ${basePrice.toStringAsFixed(0)}',
                           style: const TextStyle(fontSize: 14)),
                     ],
@@ -193,11 +199,9 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Discount',
-                            style: TextStyle(
-                                fontSize: 14, color: Color(0xFF2E8B57))),
+                            style: TextStyle(fontSize: 14, color: Color(0xFF2E8B57))),
                         Text('-EGP ${discountAmount.toStringAsFixed(0)}',
-                            style: const TextStyle(
-                                fontSize: 14, color: Color(0xFF2E8B57))),
+                            style: const TextStyle(fontSize: 14, color: Color(0xFF2E8B57))),
                       ],
                     ),
                   ],
@@ -236,6 +240,11 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
                           departureTime: widget.departureTime,
                           totalAmount: finalPrice,
                           selectedSeats: widget.selectedSeats,
+                          company: widget.company,
+                          locationId: widget.locationId,
+                          toLocationId: widget.toLocationId,
+                          tripId: widget.tripId,
+                          tripRouteLineId: widget.tripRouteLineId,
                         ),
                       ),
                     );
@@ -244,7 +253,6 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
                 ),
               ),
             ),
-
           ],
         ),
       ),
@@ -264,4 +272,3 @@ class _TicketSummaryScreenState extends State<TicketSummaryScreen> {
     }
   }
 }
-
