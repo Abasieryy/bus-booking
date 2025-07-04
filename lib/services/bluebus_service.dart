@@ -8,7 +8,8 @@ import 'package:bus_booking/core/trip_service.dart';
 import 'package:bus_booking/core/user_trip_service.dart';
 
 class BlueBusService {
-  static const String baseUrl = 'http://10.0.2.2:3000/proxy'; // For emulator
+  static const String baseUrl = 'http://10.0.2.2:3000/proxy';// For emulator
+  static const String baseUrlReal = 'https://bluebus-api.onrender.com/proxy'; // For real device
 
   static Future<void> loginAndStoreToken() async {
     print('✅ Token will be handled by proxy');
